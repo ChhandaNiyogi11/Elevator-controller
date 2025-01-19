@@ -1,23 +1,4 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 19.01.2025 11:23:18
-// Design Name: 
-// Module Name: elev
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
 
 module elevator_control_4floors (
     input clk,                  // Clock signal
@@ -50,28 +31,28 @@ module elevator_control_4floors (
         // Default: no movement
         next_floor = current_floor;
 
+        // Priority management: descending order of floors
         case (current_floor)
             FLOOR_0: begin
-                if (request[1]) next_floor = FLOOR_1;
+                if (request[3]) next_floor = FLOOR_3;
                 else if (request[2]) next_floor = FLOOR_2;
-                else if (request[3]) next_floor = FLOOR_3;
+                else if (request[1]) next_floor = FLOOR_1;
             end
             FLOOR_1: begin
-                if (request[0]) next_floor = FLOOR_0;
+                if (request[3]) next_floor = FLOOR_3;
                 else if (request[2]) next_floor = FLOOR_2;
-                else if (request[3]) next_floor = FLOOR_3;
+                else if (request[0]) next_floor = FLOOR_0;
             end
             FLOOR_2: begin
-                if (request[0]) next_floor = FLOOR_0;
+                if (request[3]) next_floor = FLOOR_3;
                 else if (request[1]) next_floor = FLOOR_1;
-                else if (request[3]) next_floor = FLOOR_3;
+                else if (request[0]) next_floor = FLOOR_0;
             end
             FLOOR_3: begin
-                if (request[0]) next_floor = FLOOR_0;
+                if (request[2]) next_floor = FLOOR_2;
                 else if (request[1]) next_floor = FLOOR_1;
-                else if (request[2]) next_floor = FLOOR_2;
+                else if (request[0]) next_floor = FLOOR_0;
             end
         endcase
     end
 endmodule
-
