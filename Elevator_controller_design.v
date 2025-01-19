@@ -1,58 +1,77 @@
-module elevator_controller(
-    input clk,            // Clock signal
-    input reset,          // Reset signal
-    input [1:0] request, // Elevator requests (2-bit input for 3 floors: 00 -> no request, 01 -> request at floor 1, 10 -> request at floor 2)
-    output reg [1:0] floor, // Current floor (2-bit output for 3 floors)
-    output reg moving     // Moving status (1: Moving, 0: Idle)
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 19.01.2025 11:23:18
+// Design Name: 
+// Module Name: elev
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+module elevator_control_4floors (
+    input clk,                  // Clock signal
+    input reset,                // Reset signal
+    input [3:0] request,        // Input requests for floors (one-hot: floor 0, 1, 2, or 3)
+    output reg [1:0] current_floor, // Current floor indicator
+    output reg moving           // Indicates if the elevator is moving
 );
 
-    // State Definitions
+    // Parameters for floors
     parameter FLOOR_0 = 2'b00;
     parameter FLOOR_1 = 2'b01;
     parameter FLOOR_2 = 2'b10;
+    parameter FLOOR_3 = 2'b11;
 
-    reg [1:0] state, next_state;
+    // State machine for the elevator
+    reg [1:0] next_floor;
 
-    // State transitions
     always @(posedge clk or posedge reset) begin
         if (reset) begin
-            state <= FLOOR_0; // Reset to floor 0
-        end else begin
-            state <= next_state;
-        end
-    end
-
-    // Next state logic
-    always @(*) begin
-        case(state)
-            FLOOR_0: begin
-                if (request == 2'b01) next_state = FLOOR_1; // Request at floor 1
-                else if (request == 2'b10) next_state = FLOOR_2; // Request at floor 2
-                else next_state = FLOOR_0;
-            end
-            FLOOR_1: begin
-                if (request == 2'b10) next_state = FLOOR_2; // Request at floor 2
-                else if (request == 2'b00) next_state = FLOOR_0; // No more request
-                else next_state = FLOOR_1;
-            end
-            FLOOR_2: begin
-                if (request == 2'b01) next_state = FLOOR_1; // Request at floor 1
-                else if (request == 2'b00) next_state = FLOOR_0; // No more request
-                else next_state = FLOOR_2;
-            end
-            default: next_state = FLOOR_0;
-        endcase
-    end
-
-    // Output logic (moving and floor signal)
-    always @(posedge clk or posedge reset) begin
-        if (reset) begin
-            floor <= FLOOR_0; // Reset to floor 0
+            current_floor <= FLOOR_0; // Reset to ground floor
             moving <= 0;
         end else begin
-            floor <= state;
-            moving <= (state != next_state); // Moving when the state changes
+            current_floor <= next_floor;
+            moving <= (next_floor != current_floor); // Moving if next floor differs
         end
     end
 
+    always @(*) begin
+        // Default: no movement
+        next_floor = current_floor;
+
+        case (current_floor)
+            FLOOR_0: begin
+                if (request[1]) next_floor = FLOOR_1;
+                else if (request[2]) next_floor = FLOOR_2;
+                else if (request[3]) next_floor = FLOOR_3;
+            end
+            FLOOR_1: begin
+                if (request[0]) next_floor = FLOOR_0;
+                else if (request[2]) next_floor = FLOOR_2;
+                else if (request[3]) next_floor = FLOOR_3;
+            end
+            FLOOR_2: begin
+                if (request[0]) next_floor = FLOOR_0;
+                else if (request[1]) next_floor = FLOOR_1;
+                else if (request[3]) next_floor = FLOOR_3;
+            end
+            FLOOR_3: begin
+                if (request[0]) next_floor = FLOOR_0;
+                else if (request[1]) next_floor = FLOOR_1;
+                else if (request[2]) next_floor = FLOOR_2;
+            end
+        endcase
+    end
 endmodule
+
