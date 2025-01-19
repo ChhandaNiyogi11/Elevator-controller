@@ -1,52 +1,97 @@
-module elevator_tb;
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 19.01.2025 11:28:12
+// Design Name: 
+// Module Name: tb
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+`timescale 1ns / 1ps
+
+module tb_elevator_control_4floors;
+
+    // Inputs to the elevator control module
     reg clk;
     reg reset;
-    reg [1:0] request;
-    wire [1:0] floor;
+    reg [3:0] request;
+
+    // Outputs from the elevator control module
+    wire [1:0] current_floor;
     wire moving;
 
-    // Instantiate the elevator controller
-    elevator_controller uut (
+    // Instantiate the elevator control module
+    elevator_control_4floors uut (
         .clk(clk),
         .reset(reset),
         .request(request),
-        .floor(floor),
+        .current_floor(current_floor),
         .moving(moving)
     );
 
-    // Clock generation
-    always #5 clk = ~clk; // 10 ns clock period
+    // Clock generation (10ns period: 100MHz clock)
+    always #5 clk = ~clk;
 
-    // Test procedure
+    // Test sequence
     initial begin
         // Initialize signals
         clk = 0;
         reset = 1;
-        request = 2'b00; // No request
+        request = 4'b0000;
 
         // Reset the elevator
-        #10 reset = 0;
+        #10;
+        reset = 0;
 
-        // Test case 1: Request at floor 1
-        #10 request = 2'b01; // Request at floor 1
-         
+        // Test case 1: Request to move to Floor 2
+        #10;
+        request = 4'b0100; // Request Floor 2
+        #50;
+        request = 4'b0000; // Clear requests
 
-        // Test case 2: Request at floor 2
-        #20 request = 2'b10; // Request at floor 2
-        
+        // Test case 2: Request to move to Floor 3
+        #10;
+        request = 4'b1000; // Request Floor 3
+        #50;
+        request = 4'b0000; // Clear requests
 
-        // Test case 3: Request at floor 1 while on floor 2
-        #20 request = 2'b01; // Request at floor 1
-        
+        // Test case 3: Request to move to Floor 0 from Floor 3
+        #10;
+        request = 4'b0001; // Request Floor 0
+        #50;
+        request = 4'b0000; // Clear requests
 
-        // End of test
-        #20 $finish;
+        // Test case 4: Multiple simultaneous requests
+        #10;
+        request = 4'b1010; // Request Floors 1 and 3
+        #50;
+        request = 4'b0000; // Clear requests
+
+        // Test case 5: Reset while the elevator is moving
+        #10;
+        request = 4'b0010; // Request Floor 1
+        #20;
+        reset = 1;         // Reset during movement
+        #10;
+        reset = 0;         // Release reset
+        request = 4'b0000; // Clear requests
+
+        // End simulation-
+        #50;
+        $stop;
     end
-
-    // Monitor output signals
-    initial begin
-        $monitor("Time: %0t, Reset: %b, Request: %b, Floor: %b, Moving: %b", 
-                 $time, reset, request, floor, moving);
-    end
-
 endmodule
+
