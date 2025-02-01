@@ -3,7 +3,7 @@
 module elevator_control_4floors (
     input clk,                  // Clock signal
     input reset,                // Reset signal
-    input [3:0] request,        // Input requests for floors (one-hot: floor 0, 1, 2, or 3)
+    input [3:0] request,        // Input requests for floors (eg 0001 : request from floor 0, 0010: request from floor 1 ,likewise)
     output reg [1:0] current_floor, // Current floor indicator
     output reg moving           // Indicates if the elevator is moving
 );
